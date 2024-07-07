@@ -1,7 +1,14 @@
-import { Button, Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
 import useRegistry from './hooks/useRegistry';
 import useBlink from './hooks/useBlink';
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 interface Props {
@@ -12,18 +19,18 @@ interface Props {
 
 export function RenderBlink(props: Props) {
   const { url, account } = props;
+  const { host } = new URL(url);
   const { fetchBlink, fetchTransaction } = useBlink();
   const { verifyBlink } = useRegistry();
-  const [input, setInput] = useState('');
   const { data: blink, error } = useQuery({
     queryKey: ['url', url],
     queryFn: ({ queryKey }) => fetchBlink(queryKey[1] as string),
   });
-  const { data: transaction } = useQuery({
-    queryKey: ['blinkURL', url, account],
-    queryFn: ({ queryKey }) =>
-      fetchTransaction(queryKey[1] as string, queryKey[2] as string),
-  });
+  // const { data: transaction } = useQuery({
+  //   queryKey: ['blinkURL', url, account],
+  //   queryFn: ({ queryKey }) =>
+  //     fetchTransaction(queryKey[1] as string, queryKey[2] as string),
+  // });
   const { data: verified } = useQuery({
     queryKey: ['blinkURL', url],
     queryFn: ({ queryKey }) => verifyBlink(queryKey[1] as string),
@@ -35,28 +42,49 @@ export function RenderBlink(props: Props) {
   return (
     <View style={styles.container}>
       <Image source={{ uri: blink?.icon }} style={styles.image} />
+      <TouchableOpacity
+        onPress={() => {
+          Linking.openURL(url);
+        }}
+      >
+        <Text
+          style={{
+            paddingTop: 10,
+            color: verified ? styles.verified.color : styles.unverified.color,
+          }}
+        >
+          {host}
+        </Text>
+      </TouchableOpacity>
       <Text style={styles.title}>{blink?.title}</Text>
-      <Text>{input}</Text>
-      <Text>{transaction?.message}</Text>
-      <Text>{verified}</Text>
       <Text style={styles.description}>{blink?.description}</Text>
-      {blink?.links?.actions.map((action, index) => (
-        <View key={index}>
-          <Button
-            title={action.label}
-            onPress={() => {
-              fetchTransaction(url, account);
-            }}
-          />
-          {action.parameters ? (
-            <TextInput
-              onChange={(e) => setInput(e.nativeEvent.text)}
-              placeholder={action.parameters[0]?.name}
-              style={styles.textInput}
-            />
-          ) : null}
-        </View>
-      ))}
+
+      <View style={styles.buttonContainer}>
+        {blink?.links?.actions.map((action, index) => (
+          <View key={index} style={styles.box}>
+            {!action.parameters ? (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  fetchTransaction(url, account);
+                }}
+              >
+                <Text style={styles.buttonText}>{action.label}</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.inputContainer}>
+                <TextInput
+                  onChange={(e) => {
+                    console.log(e.nativeEvent.text);
+                  }}
+                  placeholder={action.parameters[0]?.name}
+                  style={styles.textInput}
+                />
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -73,20 +101,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     borderRadius: 5,
     margin: 5,
+    width: '100%',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 350,
+    height: 350,
+    borderRadius: 15,
   },
   title: {
-    fontSize: 20,
+    paddingTop: 10,
+    fontSize: 17,
     fontWeight: 'bold',
   },
-  description: {
+  message: {
     fontSize: 16,
   },
+  description: {
+    fontSize: 13,
+    color: 'gray-50',
+  },
   link: {
-    color: 'blue',
+    paddingTop: 10,
+    color: 'gray',
   },
   action: {
     padding: 10,
@@ -124,4 +160,32 @@ const styles = StyleSheet.create({
   unverified: {
     color: 'red',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  box: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginVertical: 10,
+    width: '48%',
+  },
+  button: {
+    backgroundColor: '#000000',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+    width: '100%',
+  },
+  buttonText: {
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    width: '100%',
+  },
 });
+
+export default RenderBlink;
