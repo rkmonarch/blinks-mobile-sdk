@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Image,
   StyleSheet,
@@ -62,9 +63,20 @@ export function RenderBlink(props: Props) {
     return;
   }
 
-  const handlePress = async () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
+
+  const handleInputChange = (name: string, value: string) => {
+    setInputValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  };
+
+  const handlePress = async (link: string) => {
     try {
-      const result = await fetchTransaction(url, account);
+      console.log('link', link);
+      const result = await fetchTransaction(link, account);
       if (props.onTransaction) {
         props.onTransaction(result);
       }
@@ -72,6 +84,7 @@ export function RenderBlink(props: Props) {
       console.error(e);
     }
   };
+
   const mergedStyles = StyleSheet.flatten([styles, styling]);
 
   return (
@@ -103,21 +116,38 @@ export function RenderBlink(props: Props) {
               {!action.parameters ? (
                 <TouchableOpacity
                   style={mergedStyles.button}
-                  onPress={async () => {
-                    handlePress();
+                  onPress={() => {
+                    handlePress('https://' + host + action.href);
                   }}
                 >
                   <Text style={mergedStyles.buttonText}>{action.label}</Text>
                 </TouchableOpacity>
               ) : (
                 <View style={mergedStyles.inputContainer}>
-                  <TextInput
-                    onChange={(e) => {
-                      console.log(e.nativeEvent.text);
+                  {action.parameters.map((param, idx) => (
+                    <TextInput
+                      key={idx}
+                      onChangeText={(value) =>
+                        handleInputChange(param.name, value)
+                      }
+                      placeholder={param.name}
+                      style={mergedStyles.textInput}
+                      value={inputValues[param.name] || ''}
+                    />
+                  ))}
+                  <TouchableOpacity
+                    style={mergedStyles.button}
+                    onPress={() => {
+                      let actionUrl = action.href;
+                      action?.parameters?.forEach((param) => {
+                        const value = inputValues[param.name] || '';
+                        actionUrl = actionUrl.replace(`{${param.name}}`, value);
+                      });
+                      handlePress('https://' + host + actionUrl);
                     }}
-                    placeholder={action.parameters[0]?.name}
-                    style={mergedStyles.textInput}
-                  />
+                  >
+                    <Text style={mergedStyles.buttonText}>{action.label}</Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -127,8 +157,8 @@ export function RenderBlink(props: Props) {
         <View style={styles.box}>
           <TouchableOpacity
             style={mergedStyles.button}
-            onPress={async () => {
-              handlePress();
+            onPress={() => {
+              handlePress(url);
             }}
           >
             <Text style={mergedStyles.buttonText}>{blink?.label}</Text>
@@ -219,7 +249,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     marginVertical: 10,
-    width: '48%',
+    width: '100%',
   },
   button: {
     backgroundColor: '#000000',
