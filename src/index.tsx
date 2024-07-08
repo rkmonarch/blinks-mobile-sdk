@@ -7,18 +7,46 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import type { ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import useRegistry from './hooks/useRegistry';
 import useBlink from './hooks/useBlink';
 import { useQuery } from '@tanstack/react-query';
+import type { ErrorType, TransactionData } from './types/blinks';
+
+interface Styles {
+  container?: ViewStyle;
+  textInput?: ViewStyle | TextStyle;
+  image?: ImageStyle;
+  title?: TextStyle;
+  message?: TextStyle;
+  description?: TextStyle;
+  link?: TextStyle;
+  action?: ViewStyle;
+  actionLabel?: TextStyle;
+  parameter?: ViewStyle | TextStyle;
+  parameterLabel?: TextStyle;
+  error?: TextStyle;
+  transaction?: ViewStyle;
+  transactionLabel?: TextStyle;
+  verified?: TextStyle;
+  unverified?: TextStyle;
+  buttonContainer?: ViewStyle;
+  box?: ViewStyle;
+  button?: ViewStyle;
+  buttonText?: TextStyle;
+  inputContainer?: ViewStyle;
+}
 
 interface Props {
   url: string;
   account: string;
+  onTransaction: (result: TransactionData | ErrorType) => void;
   verified?: boolean;
+  styling?: Styles;
 }
 
 export function RenderBlink(props: Props) {
-  const { url, account } = props;
+  const { url, account, styling } = props;
   const { host } = new URL(url);
   const { fetchBlink, fetchTransaction } = useBlink();
   const { verifyBlink } = useRegistry();
@@ -26,11 +54,6 @@ export function RenderBlink(props: Props) {
     queryKey: ['url', url],
     queryFn: ({ queryKey }) => fetchBlink(queryKey[1] as string),
   });
-  // const { data: transaction } = useQuery({
-  //   queryKey: ['blinkURL', url, account],
-  //   queryFn: ({ queryKey }) =>
-  //     fetchTransaction(queryKey[1] as string, queryKey[2] as string),
-  // });
   const { data: verified } = useQuery({
     queryKey: ['blinkURL', url],
     queryFn: ({ queryKey }) => verifyBlink(queryKey[1] as string),
@@ -39,9 +62,21 @@ export function RenderBlink(props: Props) {
     return;
   }
 
+  const handlePress = async () => {
+    try {
+      const result = await fetchTransaction(url, account);
+      if (props.onTransaction) {
+        props.onTransaction(result);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const mergedStyles = StyleSheet.flatten([styles, styling]);
+
   return (
-    <View style={styles.container}>
-      <Image source={{ uri: blink?.icon }} style={styles.image} />
+    <View style={mergedStyles.container}>
+      <Image source={{ uri: blink?.icon }} style={mergedStyles.image} />
       <TouchableOpacity
         onPress={() => {
           Linking.openURL(url);
@@ -50,41 +85,56 @@ export function RenderBlink(props: Props) {
         <Text
           style={{
             paddingTop: 10,
-            color: verified ? styles.verified.color : styles.unverified.color,
+            color: verified
+              ? mergedStyles?.verified?.color
+              : mergedStyles?.unverified?.color,
           }}
         >
           {host}
         </Text>
       </TouchableOpacity>
-      <Text style={styles.title}>{blink?.title}</Text>
-      <Text style={styles.description}>{blink?.description}</Text>
+      <Text style={mergedStyles.title}>{blink?.title}</Text>
+      <Text style={mergedStyles.description}>{blink?.description}</Text>
 
-      <View style={styles.buttonContainer}>
-        {blink?.links?.actions.map((action, index) => (
-          <View key={index} style={styles.box}>
-            {!action.parameters ? (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  fetchTransaction(url, account);
-                }}
-              >
-                <Text style={styles.buttonText}>{action.label}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.inputContainer}>
-                <TextInput
-                  onChange={(e) => {
-                    console.log(e.nativeEvent.text);
+      {blink?.links ? (
+        <View style={mergedStyles.buttonContainer}>
+          {blink?.links?.actions.map((action, index) => (
+            <View key={index} style={mergedStyles.box}>
+              {!action.parameters ? (
+                <TouchableOpacity
+                  style={mergedStyles.button}
+                  onPress={async () => {
+                    handlePress();
                   }}
-                  placeholder={action.parameters[0]?.name}
-                  style={styles.textInput}
-                />
-              </View>
-            )}
-          </View>
-        ))}
-      </View>
+                >
+                  <Text style={mergedStyles.buttonText}>{action.label}</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={mergedStyles.inputContainer}>
+                  <TextInput
+                    onChange={(e) => {
+                      console.log(e.nativeEvent.text);
+                    }}
+                    placeholder={action.parameters[0]?.name}
+                    style={mergedStyles.textInput}
+                  />
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.box}>
+          <TouchableOpacity
+            style={mergedStyles.button}
+            onPress={async () => {
+              handlePress();
+            }}
+          >
+            <Text style={mergedStyles.buttonText}>{blink?.label}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
