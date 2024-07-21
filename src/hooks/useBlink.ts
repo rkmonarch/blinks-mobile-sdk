@@ -1,9 +1,43 @@
+import { useState } from 'react';
 import type { Blink, ErrorType, TransactionData } from '../types/blinks';
+import validateLink from '../utils/validateLink';
 
 export default function useBlink() {
-  async function fetchBlink(url: string): Promise<Blink> {
-    const response = await fetch(url);
-    return response.json();
+  const [blinkURL, setURL] = useState('');
+  const { validate } = validateLink();
+
+  async function fetchBlink(url: string): Promise<Blink | null> {
+    const validURL = await validate(url);
+    const isValidUrl = (str: string): boolean => {
+      try {
+        // eslint-disable-next-line no-new
+        new URL(str);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    if (validURL && isValidUrl(validURL)) {
+      try {
+        const res = await fetch(validURL);
+        const data = await res.json();
+        setURL(validURL);
+        return data;
+      } catch (error) {
+        console.error('Error fetching from validURL:', error);
+      }
+    } else {
+      try {
+        const blink = await fetch(url);
+        const blinkData = await blink.json();
+        setURL(url);
+        return blinkData;
+      } catch (error) {
+        console.error('Error fetching from original URL:', error);
+      }
+    }
+    return null;
   }
 
   async function fetchTransaction(
@@ -19,5 +53,6 @@ export default function useBlink() {
     });
     return response.json();
   }
-  return { fetchBlink, fetchTransaction };
+
+  return { fetchBlink, fetchTransaction, blinkURL };
 }
