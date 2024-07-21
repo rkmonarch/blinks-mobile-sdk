@@ -57,6 +57,8 @@ export function RenderBlink(props: Props) {
 
   const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
 
+  console.log(inputValues);
+
   const handleInputChange = (name: string, value: string) => {
     setInputValues((prevValues) => ({
       ...prevValues,
@@ -167,7 +169,7 @@ export function RenderBlink(props: Props) {
                         onChangeText={(value) =>
                           handleInputChange(param.name, value)
                         }
-                        placeholder={param.label}
+                        placeholder={action?.parameters[index]?.label}
                         style={[defaultStyles.input, styles.input]}
                         value={inputValues[param.name] || ''}
                       />
@@ -215,9 +217,6 @@ export function RenderBlink(props: Props) {
 
 const defaultStyles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 12,
     width: '100%',
   },
   image: {
