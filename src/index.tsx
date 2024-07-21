@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Image,
   StyleSheet,
@@ -48,20 +48,21 @@ interface Props {
 
 export function RenderBlink(props: Props) {
   const { url, account, styling } = props;
-  const { host } = new URL(url);
-  const { fetchBlink, fetchTransaction } = useBlink();
+
+  const { fetchBlink, fetchTransaction, blinkURL } = useBlink();
   const { verifyBlink } = useRegistry();
-  const { data: blink, error } = useQuery({
-    queryKey: ['url', url],
-    queryFn: ({ queryKey }) => fetchBlink(queryKey[1] as string),
-  });
+
   const { data: verified } = useQuery({
     queryKey: ['blinkURL', url],
     queryFn: ({ queryKey }) => verifyBlink(queryKey[1] as string),
   });
-  if (error) {
-    return;
-  }
+
+  // const { host } = new URL(url);
+
+  const { data: blink, error } = useQuery({
+    queryKey: ['url', url],
+    queryFn: ({ queryKey }) => fetchBlink(queryKey[1] as string),
+  });
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
@@ -75,7 +76,6 @@ export function RenderBlink(props: Props) {
 
   const handlePress = async (link: string) => {
     try {
-      console.log('link', link);
       const result = await fetchTransaction(link, account);
       if (props.onTransaction) {
         props.onTransaction(result);
@@ -86,6 +86,10 @@ export function RenderBlink(props: Props) {
   };
 
   const mergedStyles = StyleSheet.flatten([styles, styling]);
+
+  if (error || !blink) {
+    return <Text style={styles.error}>Please add valid blink url</Text>;
+  }
 
   return (
     <View style={mergedStyles.container}>
@@ -103,7 +107,7 @@ export function RenderBlink(props: Props) {
               : mergedStyles?.unverified?.color,
           }}
         >
-          {host}
+          {new URL(blinkURL).hostname}
         </Text>
       </TouchableOpacity>
       <Text style={mergedStyles.title}>{blink?.title}</Text>
@@ -117,6 +121,7 @@ export function RenderBlink(props: Props) {
                 <TouchableOpacity
                   style={mergedStyles.button}
                   onPress={() => {
+                    const { host } = new URL(blinkURL);
                     handlePress('https://' + host + action.href);
                   }}
                 >
@@ -138,6 +143,7 @@ export function RenderBlink(props: Props) {
                   <TouchableOpacity
                     style={mergedStyles.button}
                     onPress={() => {
+                      const { host } = new URL(blinkURL);
                       let actionUrl = action.href;
                       action?.parameters?.forEach((param) => {
                         const value = inputValues[param.name] || '';

@@ -6,7 +6,7 @@ import type { ErrorType, TransactionData } from '../../src/types/blinks';
 export default function App() {
   const queryClient = new QueryClient();
   const url =
-    'https://actions.dialect.to/api/jupiter/swap/USDC-2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo';
+    'https://action.3.land/blink/action/item/6S7eEzjmVEzWnhEHXF7WdYPAuAXzJ4YYNdHng3HJcuiG';
   const account = '4S7jxkoaCN8BsQi2cxscP38xEs1yZn12ooMfV94LLJPC';
   const verified = true;
   const onTransaction = (result: TransactionData | ErrorType) => {
