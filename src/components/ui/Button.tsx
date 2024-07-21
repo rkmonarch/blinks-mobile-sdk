@@ -39,21 +39,19 @@ function Button({ children, textStyle, isLoading = false, ...props }: IButton) {
       {isLoading ? (
         <ActivityIndicator size={'small'} animating={true} color={'white'} />
       ) : (
-        <>
-          <Text
-            style={[
-              {
-                fontSize: 16,
-                fontWeight: '700',
-                textAlign: 'center',
-                color: 'white',
-              },
-              textStyle,
-            ]}
-          >
-            {children}
-          </Text>
-        </>
+        <Text
+          style={[
+            {
+              fontSize: 16,
+              fontWeight: '700',
+              textAlign: 'center',
+              color: 'white',
+            },
+            textStyle,
+          ]}
+        >
+          {children}
+        </Text>
       )}
     </TouchableOpacity>
   );
