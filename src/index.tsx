@@ -170,6 +170,7 @@ export function RenderBlink(props: Props) {
                   </Button>
                 );
               }
+              return null;
             })}
           </View>
           {blink?.links.actions.map((action, index) => {
@@ -213,6 +214,7 @@ export function RenderBlink(props: Props) {
                 </View>
               );
             }
+            return null;
           })}
         </View>
       ) : (
