@@ -8,11 +8,17 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
-import type { ViewStyle, TextStyle, ImageStyle } from 'react-native';
+import {
+  type ViewStyle,
+  type TextStyle,
+  type ImageStyle,
+  useWindowDimensions,
+} from 'react-native';
 import useRegistry from './hooks/useRegistry';
 import useBlink from './hooks/useBlink';
 import { useQuery } from '@tanstack/react-query';
 import type { ErrorType, TransactionData } from './types/blinks';
+import Button from './components/ui/Button';
 
 interface Styles {
   container?: ViewStyle;
@@ -51,6 +57,7 @@ export function RenderBlink(props: Props) {
 
   const { fetchBlink, fetchTransaction, blinkURL } = useBlink();
   const { verifyBlink } = useRegistry();
+  const { width } = useWindowDimensions();
 
   const { data: verified } = useQuery({
     queryKey: ['blinkURL', url],
@@ -91,9 +98,21 @@ export function RenderBlink(props: Props) {
     return <Text style={styles.error}>Please add valid blink url</Text>;
   }
 
+  const actionsWithoutParameters =
+    blink.links?.actions.filter(
+      (action) => !action.hasOwnProperty('parameters')
+    ).length || 0;
+
   return (
     <View style={mergedStyles.container}>
-      <Image source={{ uri: blink?.icon }} style={mergedStyles.image} />
+      <Image
+        source={{ uri: blink?.icon }}
+        style={{
+          width: '100%',
+          height: width / 1.1,
+          borderRadius: 10,
+        }}
+      />
       <TouchableOpacity
         onPress={() => {
           Linking.openURL(url);
@@ -112,36 +131,73 @@ export function RenderBlink(props: Props) {
       </TouchableOpacity>
       <Text style={mergedStyles.title}>{blink?.title}</Text>
       <Text style={mergedStyles.description}>{blink?.description}</Text>
-
       {blink?.links ? (
-        <View style={mergedStyles.buttonContainer}>
-          {blink?.links?.actions.map((action, index) => (
-            <View key={index} style={mergedStyles.box}>
-              {!action.parameters ? (
-                <TouchableOpacity
-                  style={mergedStyles.button}
-                  onPress={() => {
-                    const { host } = new URL(blinkURL);
-                    handlePress('https://' + host + action.href);
-                  }}
-                >
-                  <Text style={mergedStyles.buttonText}>{action.label}</Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={mergedStyles.inputContainer}>
-                  {action.parameters.map((param, idx) => (
-                    <TextInput
-                      key={idx}
-                      onChangeText={(value) =>
-                        handleInputChange(param.name, value)
-                      }
-                      placeholder={param.name}
-                      style={mergedStyles.textInput}
-                      value={inputValues[param.name] || ''}
-                    />
-                  ))}
-                  <TouchableOpacity
-                    style={mergedStyles.button}
+        <View
+          style={{
+            width: '100%',
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              marginTop: 16,
+            }}
+          >
+            {blink?.links?.actions.map((action, index) => {
+              if (!action.parameters) {
+                return (
+                  <Button
+                    key={index}
+                    style={[
+                      styles.button,
+                      {
+                        width:
+                          actionsWithoutParameters % 2 === 0
+                            ? '48%'
+                            : index === actionsWithoutParameters - 1
+                              ? '100%'
+                              : '48%',
+                      },
+                    ]}
+                    onPress={() => {
+                      const { host } = new URL(blinkURL);
+                      handlePress('https://' + host + action.href);
+                    }}
+                  >
+                    {action.label}
+                  </Button>
+                );
+              }
+            })}
+          </View>
+          {blink?.links.actions.map((action, index) => {
+            if (action.parameters) {
+              return (
+                <View key={index}>
+                  {action.parameters &&
+                    action.parameters.map((param, index) => (
+                      <TextInput
+                        key={index}
+                        onChangeText={(value) =>
+                          handleInputChange(param.name, value)
+                        }
+                        placeholder={param.name}
+                        style={{
+                          paddingVertical: 12,
+                          paddingHorizontal: 16,
+                          backgroundColor: '#D3D3D3',
+                          borderRadius: 8,
+                          marginBottom: 12,
+                        }}
+                        value={inputValues[param.name] || ''}
+                      />
+                    ))}
+                  <Button
+                    style={{
+                      width: '100%',
+                    }}
                     onPress={() => {
                       const { host } = new URL(blinkURL);
                       let actionUrl = action.href;
@@ -152,24 +208,22 @@ export function RenderBlink(props: Props) {
                       handlePress('https://' + host + actionUrl);
                     }}
                   >
-                    <Text style={mergedStyles.buttonText}>{action.label}</Text>
-                  </TouchableOpacity>
+                    {action.label}
+                  </Button>
                 </View>
-              )}
-            </View>
-          ))}
+              );
+            }
+          })}
         </View>
       ) : (
-        <View style={styles.box}>
-          <TouchableOpacity
-            style={mergedStyles.button}
-            onPress={() => {
-              handlePress(url);
-            }}
-          >
-            <Text style={mergedStyles.buttonText}>{blink?.label}</Text>
-          </TouchableOpacity>
-        </View>
+        <Button
+          style={mergedStyles.button}
+          onPress={() => {
+            handlePress(url);
+          }}
+        >
+          {blink?.label}
+        </Button>
       )}
     </View>
   );
@@ -177,16 +231,15 @@ export function RenderBlink(props: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 16,
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
-    margin: 10,
+    width: '100%',
   },
   textInput: {
     padding: 10,
     backgroundColor: '#e0e0e0',
     borderRadius: 5,
-    margin: 5,
     width: '100%',
   },
   image: {
@@ -247,9 +300,7 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   buttonContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    backgroundColor: 'cyan',
   },
   box: {
     flexDirection: 'column',
@@ -258,7 +309,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   button: {
-    backgroundColor: '#000000',
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
@@ -271,6 +321,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '100%',
+    backgroundColor: 'cyan',
   },
 });
 
