@@ -1,5 +1,5 @@
 import { SafeAreaView, StyleSheet } from 'react-native';
-import { RenderBlink, type BlinkStyles } from 'blinks-mobile-sdk';
+import { Blink, type BlinkStyles } from 'blinks-mobile-sdk';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ErrorType, TransactionData } from '../../src/types/blinks';
 
@@ -15,7 +15,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaView style={styles.container}>
-        <RenderBlink
+        <Blink
           url={url}
           account={account}
           onTransaction={onTransaction}
