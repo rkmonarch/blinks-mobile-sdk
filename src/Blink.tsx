@@ -14,6 +14,7 @@ import Button from './components/ui/Button';
 import useBlink from './hooks/useBlink';
 import useRegistry from './hooks/useRegistry';
 import type { BlinkProps } from './types';
+import Skeleton from './Skeleton';
 
 export function Blink(props: BlinkProps) {
   const { url, account, styles } = props;
@@ -26,7 +27,11 @@ export function Blink(props: BlinkProps) {
     queryFn: ({ queryKey }) => verifyBlink(queryKey[1] as string),
   });
 
-  const { data: blink, error } = useQuery({
+  const {
+    data: blink,
+    error,
+    isLoading,
+  } = useQuery({
     queryKey: ['url', url],
     queryFn: ({ queryKey }) => fetchBlink(queryKey[1] as string),
   });
@@ -50,6 +55,10 @@ export function Blink(props: BlinkProps) {
       console.error(e);
     }
   };
+
+  if (isLoading) {
+    return <Skeleton />;
+  }
 
   if (error) {
     return <Text>Please add valid blink url</Text>;
