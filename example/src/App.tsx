@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function App() {
   const queryClient = new QueryClient();
-  const url = 'https://actions.dialect.to/api/jupiter/swap/SOL-SEND';
+  const url = 'https://onlyblinks.com';
   const account = '4S7jxkoaCN8BsQi2cxscP38xEs1yZn12ooMfV94LLJPC';
 
   const onTransaction = (result: TransactionData) => {
@@ -35,7 +35,7 @@ const blink: BlinkStyles = {
     padding: 16,
   },
   button: {
-    backgroundColor: 'red',
+    backgroundColor: '#4B70F5',
     borderRadius: 10,
     paddingHorizontal: 2,
   },
