@@ -1,6 +1,6 @@
 {
   "name": "blinks-mobile-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A sdk for rendering blinks in your react native apps",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.cjs",

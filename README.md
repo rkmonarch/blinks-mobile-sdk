@@ -27,37 +27,46 @@ In your project, you need to set up the `QueryClient` for `@tanstack/react-query
 # Create a component to render the blink:
 
 ```tsx
-import { StyleSheet, View } from 'react-native';
-import { RenderBlink, type BlinkStyles } from 'blinks-mobile-sdk';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import {
+  Blink,
+  type BlinkStyles,
+  type TransactionData,
+} from 'blinks-mobile-sdk';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ErrorType, TransactionData } from '../../src/types/blinks';
 
 export default function App() {
   const queryClient = new QueryClient();
-  const url = 'https://actions.dialect.to/api/jupiter/swap/USDC-SEND';
+  const url = 'https://actions.dialect.to/api/jupiter/swap/SOL-SEND';
   const account = '4S7jxkoaCN8BsQi2cxscP38xEs1yZn12ooMfV94LLJPC';
-  const onTransaction = (result: TransactionData | ErrorType) => {
+
+  const onTransaction = (result: TransactionData) => {
     console.log(result);
   };
 
   return (
     <QueryClientProvider client={queryClient}>
-      <View style={styles.container}>
-        <RenderBlink
+      <SafeAreaView style={styles.container}>
+        <Blink
           url={url}
           account={account}
           onTransaction={onTransaction}
-          styles={blinkStyles}
+          styles={blink}
         />
-      </View>
+      </SafeAreaView>
     </QueryClientProvider>
   );
 }
 
-const blinkStyles: BlinkStyles = {
+const blink: BlinkStyles = {
+  container: {
+    flex: 1,
+    padding: 16,
+  },
   button: {
-    backgroundColor: '#4B70F5',
+    backgroundColor: 'red',
     borderRadius: 10,
+    paddingHorizontal: 2,
   },
   title: {
     fontSize: 16,
@@ -68,18 +77,14 @@ const blinkStyles: BlinkStyles = {
   input: {
     fontSize: 14,
   },
+  buttonText: {
+    fontSize: 13,
+  },
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
   },
 });
 ```

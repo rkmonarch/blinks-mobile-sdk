@@ -51,8 +51,12 @@ export function Blink(props: BlinkProps) {
     }
   };
 
-  if (error || !blink) {
+  if (error) {
     return <Text>Please add valid blink url</Text>;
+  }
+
+  if (!blink) {
+    return;
   }
 
   const actionsWithoutParameters =
