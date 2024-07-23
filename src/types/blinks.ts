@@ -27,5 +27,5 @@ export interface ErrorType {
 
 export interface TransactionData {
   transaction: string;
-  message: string;
+  message?: string;
 }

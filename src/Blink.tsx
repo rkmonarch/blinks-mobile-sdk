@@ -224,9 +224,11 @@ const defaultStyles = StyleSheet.create({
   input: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#D3D3D3',
+    backgroundColor: '#F4F4F4',
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#D9D9D9',
   },
   mutipleButtonContainer: {
     flexDirection: 'row',

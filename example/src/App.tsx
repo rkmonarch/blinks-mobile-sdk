@@ -1,14 +1,17 @@
 import { SafeAreaView, StyleSheet } from 'react-native';
-import { Blink, type BlinkStyles } from 'blinks-mobile-sdk';
+import {
+  Blink,
+  type BlinkStyles,
+  type TransactionData,
+} from 'blinks-mobile-sdk';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ErrorType, TransactionData } from '../../src/types/blinks';
 
 export default function App() {
   const queryClient = new QueryClient();
-  const url = 'https://dca.compressed.fun/blinks';
+  const url = 'https://actions.dialect.to/api/jupiter/swap/SOL-SEND';
   const account = '4S7jxkoaCN8BsQi2cxscP38xEs1yZn12ooMfV94LLJPC';
 
-  const onTransaction = (result: TransactionData | ErrorType) => {
+  const onTransaction = (result: TransactionData) => {
     console.log(result);
   };
 
@@ -32,8 +35,9 @@ const blink: BlinkStyles = {
     padding: 16,
   },
   button: {
-    backgroundColor: '#4B70F5',
+    backgroundColor: 'red',
     borderRadius: 10,
+    paddingHorizontal: 2,
   },
   title: {
     fontSize: 16,
@@ -43,6 +47,9 @@ const blink: BlinkStyles = {
   },
   input: {
     fontSize: 14,
+  },
+  buttonText: {
+    fontSize: 13,
   },
 };
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Blink, ErrorType, TransactionData } from '../types/blinks';
+import type { Blink, TransactionData } from '../types/blinks';
 import validateLink from '../utils/validateLink';
 
 export default function useBlink() {
@@ -10,7 +10,6 @@ export default function useBlink() {
     const validURL = await validate(url);
     const isValidUrl = (str: string): boolean => {
       try {
-        // eslint-disable-next-line no-new
         new URL(str);
         return true;
       } catch {
@@ -43,7 +42,7 @@ export default function useBlink() {
   async function fetchTransaction(
     url: string,
     account: string
-  ): Promise<TransactionData | ErrorType> {
+  ): Promise<TransactionData> {
     const response = await fetch(url, {
       method: 'POST',
       headers: {

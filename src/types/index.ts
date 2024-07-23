@@ -4,7 +4,7 @@ import {
   type ImageStyle,
   type StyleProp,
 } from 'react-native';
-import type { ErrorType, TransactionData } from './blinks';
+import type { TransactionData } from './blinks';
 
 export interface BlinkStyles {
   container?: ViewStyle;
@@ -20,6 +20,6 @@ export interface BlinkStyles {
 export interface BlinkProps {
   url: string;
   account: string;
-  onTransaction: (result: TransactionData | ErrorType) => void;
+  onTransaction: (result: TransactionData) => void;
   styles: BlinkStyles;
 }
